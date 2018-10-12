@@ -4,7 +4,8 @@
   "description": "自用小程序脚手架",
   "main": "index.js",
   "scripts": {
-    "test": "cross-env ENV=development ./bin/wxa",
+    "todo:": "\"pre-commit\": \"npm test\",",
+    "test": "cross-env ENV=development ./bin/wxa create newpro",
     "cli": "cross-env ENV=development ./bin/wxa",
     "release": "standard-version"
   },
@@ -33,5 +34,12 @@
     "cross-env": "^5.2.0",
     "husky": "^1.1.2",
     "standard-version": "^4.4.0"
+  },
+  "dependencies": {
+    "fs-extra": "^7.0.0",
+    "inquirer": "^6.2.0",
+    "lodash": "^4.17.11",
+    "mkdirp": "^0.5.1",
+    "yargs": "^12.0.2"
   }
 }

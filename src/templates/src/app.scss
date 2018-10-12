@@ -1,0 +1,15 @@
+@import '~@/style/core/index';
+
+scroll-view {
+	scroll-behavior: smooth;
+	-webkit-overflow-scrolling: touch;
+}
+
+button, .button-hover {
+	line-height: 1;
+	background-color: transparent;
+
+	&::before, &::after {
+		border: 0;
+	}
+}

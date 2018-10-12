@@ -1,0 +1,11 @@
+@import '../theme/core';
+@import '../mixin/core';
+@import 'weui';
+
+page, view, navigator, picker, image,button {
+	box-sizing: border-box;
+}
+
+page {
+	font-family: Cambria  Cochin  Georgia  Times Times New Roman  serif;
+}
