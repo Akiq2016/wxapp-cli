@@ -1,10 +1,10 @@
 {
   "name": "wxapp-cli",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "description": "自用小程序脚手架",
   "main": "index.js",
   "scripts": {
-    "todo:": "\"pre-commit\": \"npm test\",",
+    "format": "prettier --trailing-comma es5 --single-quote --write 'src/*/*.js'",
     "test": "cross-env ENV=development ./bin/wxa create newpro",
     "cli": "cross-env ENV=development ./bin/wxa",
     "release": "standard-version"
@@ -33,6 +33,8 @@
     "babel-runtime": "^6.23.0",
     "cross-env": "^5.2.0",
     "husky": "^1.1.2",
+    "lint-staged": "^7.3.0",
+    "prettier": "^1.14.3",
     "standard-version": "^4.4.0"
   },
   "dependencies": {
@@ -41,5 +43,11 @@
     "lodash": "^4.17.11",
     "mkdirp": "^0.5.1",
     "yargs": "^12.0.2"
+  },
+  "lint-staged": {
+    "*.js": [
+      "prettier --trailing-comma es5 --single-quote --write",
+      "git add"
+    ]
   }
 }
