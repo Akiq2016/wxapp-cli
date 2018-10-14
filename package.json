@@ -38,6 +38,7 @@
     "standard-version": "^4.4.0"
   },
   "dependencies": {
+    "esformatter": "^0.10.0",
     "fs-extra": "^7.0.0",
     "inquirer": "^6.2.0",
     "lodash": "^4.17.11",

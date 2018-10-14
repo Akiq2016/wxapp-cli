@@ -3,7 +3,8 @@ import mkdirp from 'mkdirp';
 import inquirer from 'inquirer';
 import { copySync, existsSync, readFileSync, writeFileSync } from 'fs-extra';
 import { template } from 'lodash';
-import { execSync, exec, spawn } from 'child_process';
+import { execSync } from 'child_process';
+import esformatter from 'esformatter';
 
 const cwd = process.cwd();
 let projectDir;
@@ -16,21 +17,24 @@ const createPromptItems = options => [
   // todo: custom webpack config, e.g. scripts/style
   {
     type: 'list',
-    name: 'pkgtype',
+    name: 'pkg',
     message: 'Select your package manager:',
     default: 0, // todo: store in a user config file
-    choices: ['NPM', 'YARN'],
+    choices: ['npm', 'yarn'],
   },
   {
     type: 'list',
-    name: 'scriptstype',
+    name: 'scripts',
     message: 'Select your project script type:',
     default: 0,
     choices: ['JavaScript', 'TypeScript'],
+    filter: value => {
+      return value === 'JavaScript' ? 'js' : 'ts';
+    },
   },
   {
     type: 'list',
-    name: 'styletype',
+    name: 'style',
     message: 'Select your project CSS pre-processor:',
     default: 0,
     choices: ['scss', 'less', 'No thanks, I use wxss!'],
@@ -95,6 +99,14 @@ export const createHandler = async argv => {
     );
   }
 
+  options.projectdir = projectDir;
+
+  // save user project setting
+  writeFileSync(
+    join(projectDir, 'wxa.config.js'),
+    esformatter.format(`module.exports = ${JSON.stringify(options)};\n`)
+  );
+
   // start creating project according to options
   const tplPkg = readFileSync(
     join(projectDir, '.templates/package.json'),
@@ -112,6 +124,8 @@ export const createHandler = async argv => {
 
   // copy dirs to project root dir
   // todo: some dirs' files need to be selected by user, the others can be output directly
+  // todo: only move component page (subpage) dir to .template
+  // todo: template files ext should use user config
   presetDirs.forEach(dir => {
     copySync(join(projectDir, `.templates/${dir}`), join(projectDir, dir));
   });
@@ -119,8 +133,9 @@ export const createHandler = async argv => {
   // todo: should put at the last step
   // todo: template should have yarn.lock or package.lock
   process.chdir(projectDir);
-  const installCmd = options.pkgtype === 'NPM' ? 'npm install' : 'yarn';
+  const installCmd = options.pkg === 'npm' ? 'npm install' : 'yarn';
   try {
+    // todo: https://github.com/angular/angular-cli/blob/master/packages/angular/cli/tasks/npm-install.ts
     execSync(installCmd, { stdio: [0, 1, 2] });
   } catch (e) {
     // todo: add chalk

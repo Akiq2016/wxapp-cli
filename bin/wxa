@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-
 if (process.env.ENV === 'development') {
 	// https://stackoverflow.com/questions/28782656/how-to-run-node-js-app-with-es6-features-enabled
-	require('babel-register')(JSON.parse(fs.readFileSync('./.babelrc')));
+	require('babel-register')({
+		"presets": ["env", "stage-0"],
+		"plugins": ["transform-runtime"],
+		"comments": false
+	});
 	require('../src/index');
 } else {
 	require('../lib/index');
