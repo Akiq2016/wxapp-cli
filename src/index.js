@@ -13,7 +13,7 @@ try {
       desc: 'new a wxapp project',
     })
     .command({
-      command: 'generate [name]',
+      command: 'generate [type] [name]',
       aliases: ['g', 'gen'],
       builder: generateBuilder,
       handler: generateHandler,
