@@ -13,7 +13,7 @@ const getProjectDir = dir => resolve(cwd, dir);
 // todo: configuration files
 const presetDirs = ['bin', 'build', 'src'];
 
-const createPromptItems = options => [
+const getNewPromptItems = options => [
   // todo: custom webpack config, e.g. scripts/style
   {
     type: 'list',
@@ -46,9 +46,9 @@ const createPromptItems = options => [
 
 // This function is executed with a yargs instance,
 // and can be used to provide advanced command specific help:
-export const createBuilder = yargs => {
+export const newBuilder = yargs => {
   yargs
-    .usage('\n wxa create [args]')
+    .usage('\n wxa new [args]')
     .options({
       yes: {
         alias: 'y',
@@ -60,7 +60,7 @@ export const createBuilder = yargs => {
 };
 
 // handler function, which will be executed with the parsed argv object:
-export const createHandler = async argv => {
+export const newHandler = async argv => {
   const projectName = argv._[1];
 
   // get project name, mkdir this project, initial templates
@@ -95,7 +95,7 @@ export const createHandler = async argv => {
   } else {
     options = Object.assign(
       argv,
-      await inquirer.prompt(createPromptItems(argv))
+      await inquirer.prompt(getNewPromptItems(argv))
     );
   }
 

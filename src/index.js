@@ -1,5 +1,5 @@
 import yargs from 'yargs';
-import { createBuilder, createHandler } from './commands/create';
+import { newBuilder, newHandler } from './commands/new';
 import { generateBuilder, generateHandler } from './commands/generate';
 import { version } from '../package.json';
 
@@ -7,10 +7,10 @@ try {
   yargs
     .usage('\n wxa <command> [args]')
     .command({
-      command: 'create',
-      builder: createBuilder,
-      handler: createHandler,
-      desc: 'create a new wxapp project',
+      command: 'new',
+      builder: newBuilder,
+      handler: newHandler,
+      desc: 'new a wxapp project',
     })
     .command({
       command: 'generate [name]',
