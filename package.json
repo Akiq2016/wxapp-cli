@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "format": "prettier --trailing-comma es5 --single-quote --write 'src/*/*.js'",
-    "test": "cross-env ENV=development ./bin/wxa create newpro",
+    "test": "jest",
     "cli": "cross-env ENV=development ./bin/wxa",
     "release": "standard-version"
   },
@@ -27,12 +27,14 @@
     "@commitlint/cli": "^7.2.0",
     "@commitlint/config-conventional": "^7.1.2",
     "babel-core": "^6.24.0",
+    "babel-jest": "^23.6.0",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-stage-0": "^6.22.0",
     "babel-runtime": "^6.23.0",
     "cross-env": "^5.2.0",
     "husky": "^1.1.2",
+    "jest": "^23.6.0",
     "lint-staged": "^7.3.0",
     "prettier": "^1.14.3",
     "standard-version": "^4.4.0"

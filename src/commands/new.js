@@ -61,7 +61,23 @@ export const newBuilder = yargs => {
 
 // handler function, which will be executed with the parsed argv object:
 export const newHandler = async argv => {
-  const projectName = argv._[1];
+  let options;
+  // todo quick generate project using default setting
+  if (argv.y) {
+  } else {
+    options = Object.assign(
+      argv,
+      await inquirer.prompt(getNewPromptItems(argv))
+    );
+  }
+
+  options.projectdir = projectDir;
+
+  newProject(options);
+};
+
+export function newProject(options) {
+  const projectName = options._[1];
 
   // get project name, mkdir this project, initial templates
   try {
@@ -89,18 +105,6 @@ export const newHandler = async argv => {
     return;
   }
 
-  let options;
-  // todo quick generate project using default setting
-  if (argv.y) {
-  } else {
-    options = Object.assign(
-      argv,
-      await inquirer.prompt(getNewPromptItems(argv))
-    );
-  }
-
-  options.projectdir = projectDir;
-
   // save user project setting
   writeFileSync(
     join(projectDir, 'wxa.config.js'),
@@ -112,6 +116,7 @@ export const newHandler = async argv => {
     join(projectDir, '.templates/package.json'),
     'utf8'
   );
+
   // todo: add rules validation
   // todo: (the name of the package: String does not match the pattern of "^(?:@[a-z0-9-~][a-z0-9-._~]*/)?[a-z0-9-~][a-z0-9-._~]*$".)
   writeFileSync(
@@ -141,4 +146,4 @@ export const newHandler = async argv => {
     // todo: add chalk
     console.warn(`${installCmd} has failed, you can run it youself later.`);
   }
-};
+}
