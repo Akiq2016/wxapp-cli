@@ -77,73 +77,81 @@ export const newHandler = async argv => {
 };
 
 export function newProject(options) {
-  const projectName = options._[1];
+  return new Promise((resolve, reject) => {
+    try {
+      const projectName = options._[1];
 
-  // get project name, mkdir this project, initial templates
-  try {
-    if (projectName) {
-      projectDir = getProjectDir(projectName);
+      // get project name, mkdir this project, initial templates
+      try {
+        if (projectName) {
+          projectDir = getProjectDir(projectName);
 
-      if (!existsSync(projectDir)) {
-        mkdirp.sync(projectDir);
-      } else {
-        projectDir = null;
-        // todo: maybe should not throw error
-        throw new Error(`[failed] ${projectDir} existed`);
+          if (!existsSync(projectDir)) {
+            mkdirp.sync(projectDir);
+          } else {
+            projectDir = null;
+            // todo: maybe should not throw error
+            throw new Error(`[failed] ${projectDir} existed`);
+          }
+
+          // todo: global template dir < local template dir
+          // todo: don't copy unuse template.
+          // initial local templates store path
+          copySync(
+            join(__dirname, '..', 'templates'),
+            join(projectDir, '.templates')
+          );
+        }
+      } catch (error) {
+        console.error(error);
+        return;
       }
 
-      // todo: global template dir < local template dir
-      // todo: don't copy unuse template.
-      // initial local templates store path
-      copySync(
-        join(__dirname, '..', 'templates'),
-        join(projectDir, '.templates')
+      // save user project setting
+      writeFileSync(
+        join(projectDir, 'wxa.config.js'),
+        esformatter.format(`module.exports = ${JSON.stringify(options)};\n`)
       );
+
+      // start creating project according to options
+      const tplPkg = readFileSync(
+        join(projectDir, '.templates/package.json'),
+        'utf8'
+      );
+
+      // todo: add rules validation
+      // todo: (the name of the package: String does not match the pattern of "^(?:@[a-z0-9-~][a-z0-9-._~]*/)?[a-z0-9-~][a-z0-9-._~]*$".)
+      writeFileSync(
+        join(projectDir, 'package.json'),
+        template(tplPkg)({ projectName })
+      );
+
+      // copy files to project root dir
+      copySync(join(projectDir, '.templates/projectcfg'), projectDir);
+
+      // copy dirs to project root dir
+      // todo: some dirs' files need to be selected by user, the others can be output directly
+      // todo: only move component page (subpage) dir to .template
+      // todo: template files ext should use user config
+      presetDirs.forEach(dir => {
+        copySync(join(projectDir, `.templates/${dir}`), join(projectDir, dir));
+      });
+
+      // todo: should put at the last step
+      // todo: template should have yarn.lock or package.lock
+      process.chdir(projectDir);
+      const installCmd = options.pkg === 'npm' ? 'npm install' : 'yarn';
+      try {
+        // todo: https://github.com/angular/angular-cli/blob/master/packages/angular/cli/tasks/npm-install.ts
+        execSync(installCmd, { stdio: [0, 1, 2] });
+      } catch (e) {
+        // todo: add chalk
+        console.warn(`${installCmd} has failed, you can run it youself later.`);
+      }
+
+      resolve();
+    } catch (error) {
+      reject(error);
     }
-  } catch (error) {
-    console.error(error);
-    return;
-  }
-
-  // save user project setting
-  writeFileSync(
-    join(projectDir, 'wxa.config.js'),
-    esformatter.format(`module.exports = ${JSON.stringify(options)};\n`)
-  );
-
-  // start creating project according to options
-  const tplPkg = readFileSync(
-    join(projectDir, '.templates/package.json'),
-    'utf8'
-  );
-
-  // todo: add rules validation
-  // todo: (the name of the package: String does not match the pattern of "^(?:@[a-z0-9-~][a-z0-9-._~]*/)?[a-z0-9-~][a-z0-9-._~]*$".)
-  writeFileSync(
-    join(projectDir, 'package.json'),
-    template(tplPkg)({ projectName })
-  );
-
-  // copy files to project root dir
-  copySync(join(projectDir, '.templates/projectcfg'), projectDir);
-
-  // copy dirs to project root dir
-  // todo: some dirs' files need to be selected by user, the others can be output directly
-  // todo: only move component page (subpage) dir to .template
-  // todo: template files ext should use user config
-  presetDirs.forEach(dir => {
-    copySync(join(projectDir, `.templates/${dir}`), join(projectDir, dir));
   });
-
-  // todo: should put at the last step
-  // todo: template should have yarn.lock or package.lock
-  process.chdir(projectDir);
-  const installCmd = options.pkg === 'npm' ? 'npm install' : 'yarn';
-  try {
-    // todo: https://github.com/angular/angular-cli/blob/master/packages/angular/cli/tasks/npm-install.ts
-    execSync(installCmd, { stdio: [0, 1, 2] });
-  } catch (e) {
-    // todo: add chalk
-    console.warn(`${installCmd} has failed, you can run it youself later.`);
-  }
 }

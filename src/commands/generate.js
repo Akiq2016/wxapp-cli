@@ -65,7 +65,9 @@ function writeAppJson({ type, cwd, filePathTpl, argv }) {
     appJson.pages.push(value);
     writeFileSync(appJsonPath, JSON.stringify(appJson, null, 2));
   } else if (type === 'subpage') {
-    const root = argv.root;
+    const root = argv.root.startsWith('/')
+      ? argv.root.slice(1)
+      : `pages/${argv.root}`;
     value = value.split(`${root}/`)[1];
 
     if (!Array.isArray(appJson.subPackages)) {
