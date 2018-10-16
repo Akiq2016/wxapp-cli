@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "format": "prettier --trailing-comma es5 --single-quote --write 'src/*/*.js'",
-    "test": "jest",
-    "cli": "cross-env ENV=development ./bin/wxa",
+    "test": "cross-env ENV=development jest",
     "release": "standard-version"
   },
   "bin": {

@@ -20,6 +20,10 @@ function newHandler(pkg, scripts, style) {
 }
 
 function getPageValInAppJson(appJsonPages, pagePath) {
+  if (pagePath.indexOf('\\') >= 0) {
+    pagePath = pagePath.split('\\').join('/');
+  }
+
   const page = pagePath.split('newproject/src/')[1].replace('.wxml', '');
   return appJsonPages.find(v => v === page);
 }
@@ -43,7 +47,7 @@ function getSubPageValInAppJson({ subpackages, root, page }) {
 
 beforeAll(() => {
   global.root = resolve(__dirname, '..');
-  global.wxa = `ENV=development ${root}/bin/wxa`;
+  global.wxa = `node ${root}/bin/wxa`;
 
   if (existsSync(join(root, 'newproject'))) {
     removeSync(join(root, 'newproject/src', 'pages'));
