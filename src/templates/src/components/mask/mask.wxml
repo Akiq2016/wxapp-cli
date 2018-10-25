@@ -1,6 +1,0 @@
-<slot class="content"></slot>
-<view
-    class="mask {{animationShow ? 'show' : ''}}"
-    catch:touchmove
-    catch:tap="close">
-</view>
