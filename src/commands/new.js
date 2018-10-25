@@ -1,46 +1,38 @@
 import { resolve, join } from 'path';
 import mkdirp from 'mkdirp';
 import inquirer from 'inquirer';
-import { copySync, existsSync, readFileSync, writeFileSync } from 'fs-extra';
-import { template } from 'lodash';
+import { copySync, existsSync, writeFileSync } from 'fs-extra';
 import { execSync } from 'child_process';
-import esformatter from 'esformatter';
+import config from '../config';
+import { consoleErr, consoleWarn } from '../utils';
 
 const cwd = process.cwd();
-let projectDir;
 
 const getProjectDir = dir => resolve(cwd, dir);
-// todo: configuration files
-const presetDirs = ['bin', 'build', 'src'];
 
-const getNewPromptItems = options => [
-  // todo: custom webpack config, e.g. scripts/style
+const getNewPromptItems = _ => [
   {
     type: 'list',
     name: 'pkg',
     message: 'Select your package manager:',
-    default: 0, // todo: store in a user config file
-    choices: ['npm', 'yarn'],
+    default: 0,
+    choices: config.createdChoicesDict['pkg'],
   },
   {
     type: 'list',
     name: 'scripts',
     message: 'Select your project script type:',
     default: 0,
-    choices: ['JavaScript', 'TypeScript'],
-    filter: value => {
-      return value === 'JavaScript' ? 'js' : 'ts';
-    },
+    choices: config.createdChoicesDict['scripts'],
+    filter: config.createdChoicesFilterDict['scripts'],
   },
   {
     type: 'list',
     name: 'style',
     message: 'Select your project CSS pre-processor:',
     default: 0,
-    choices: ['scss', 'less', 'No thanks, I use wxss!'],
-    filter: value => {
-      return value === 'No thanks, I use wxss!' ? 'wxss' : value;
-    },
+    choices: config.createdChoicesDict['style'],
+    filter: config.createdChoicesFilterDict['style'],
   },
 ];
 
@@ -50,8 +42,8 @@ export const newBuilder = yargs => {
   yargs
     .usage('\n wxa new [args]')
     .options({
-      yes: {
-        alias: 'y',
+      y: {
+        alias: 'yes',
         desc: 'use default setting',
         type: 'boolean',
       },
@@ -62,8 +54,23 @@ export const newBuilder = yargs => {
 // handler function, which will be executed with the parsed argv object:
 export const newHandler = async argv => {
   let options;
-  // todo quick generate project using default setting
+
+  // initial project dir
+  if (argv.projectname) {
+    argv.projectDir = getProjectDir(argv.projectname);
+
+    if (!existsSync(argv.projectDir)) {
+      mkdirp.sync(argv.projectDir);
+    } else {
+      consoleErr(`${argv.projectDir} already existed`);
+      delete argv.projectDir;
+      return;
+    }
+  }
+
+  // get options
   if (argv.y) {
+    options = Object.assign(argv, config.defaultChoiceDict);
   } else {
     options = Object.assign(
       argv,
@@ -71,82 +78,72 @@ export const newHandler = async argv => {
     );
   }
 
-  options.projectdir = projectDir;
+  // todo: [debug mode] start generate project by options
+  console.log(options);
 
-  newProject(options);
+  try {
+    await newProject(options);
+  } catch (error) {
+    consoleErr(error);
+    process.exit(0);
+  }
 };
 
 export function newProject(options) {
   return new Promise((resolve, reject) => {
     try {
-      const projectName = options._[1];
+      process.chdir(options.projectDir);
 
-      // get project name, mkdir this project, initial templates
+      // 1. generate project using projectTplPath
+      const projectTplPath = options.tplpath || config.projectTplPath;
+      // todo: warning Config file was not found
+      // todo: if using default project template
+      // some dirs' files need to be selected by user, the others can be output directly
+      execSync(`sao ${projectTplPath} --clone`, { stdio: [0, 1, 2] });
+
+      // 2. initial page/spage/cpn's templates: using custom tpl > using default tpl
+      // todo: template files ext should use user config
       try {
-        if (projectName) {
-          projectDir = getProjectDir(projectName);
+        const defaultTplDir = join(__dirname, '..', 'templates');
+        const tplDir = existsSync(config.customConfigDir)
+          ? config.customConfigDir
+          : defaultTplDir;
 
-          if (!existsSync(projectDir)) {
-            mkdirp.sync(projectDir);
-          } else {
-            projectDir = null;
-            // todo: maybe should not throw error
-            throw new Error(`[failed] ${projectDir} existed`);
-          }
+        copySync(tplDir, join(options.projectDir, '.templates'));
 
-          // todo: global template dir < local template dir
-          // todo: don't copy unuse template.
-          // initial local templates store path
+        // check page template
+        if (!existsSync(join(tplDir, 'page'))) {
           copySync(
-            join(__dirname, '..', 'templates'),
-            join(projectDir, '.templates')
+            join(defaultTplDir, 'page'),
+            join(options.projectDir, '.templates/page')
+          );
+        }
+
+        // check component template
+        if (!existsSync(join(tplDir, 'component'))) {
+          copySync(
+            join(defaultTplDir, 'component'),
+            join(options.projectDir, '.templates/component')
           );
         }
       } catch (error) {
-        console.error(error);
+        consoleErr(error);
         return;
       }
 
-      // save user project setting
+      // 3. save user project setting to wxa.config.js
       writeFileSync(
-        join(projectDir, 'wxa.config.js'),
-        esformatter.format(`module.exports = ${JSON.stringify(options)};\n`)
+        join(options.projectDir, 'wxa.config.js'),
+        `module.exports = ${JSON.stringify(options, null, 2)};\n`
       );
 
-      // start creating project according to options
-      const tplPkg = readFileSync(
-        join(projectDir, '.templates/package.json'),
-        'utf8'
-      );
-
-      // todo: add rules validation
-      // todo: (the name of the package: String does not match the pattern of "^(?:@[a-z0-9-~][a-z0-9-._~]*/)?[a-z0-9-~][a-z0-9-._~]*$".)
-      writeFileSync(
-        join(projectDir, 'package.json'),
-        template(tplPkg)({ projectName })
-      );
-
-      // copy files to project root dir
-      copySync(join(projectDir, '.templates/projectcfg'), projectDir);
-
-      // copy dirs to project root dir
-      // todo: some dirs' files need to be selected by user, the others can be output directly
-      // todo: only move component page (subpage) dir to .template
-      // todo: template files ext should use user config
-      presetDirs.forEach(dir => {
-        copySync(join(projectDir, `.templates/${dir}`), join(projectDir, dir));
-      });
-
-      // todo: should put at the last step
-      // todo: template should have yarn.lock or package.lock
-      process.chdir(projectDir);
+      // todo 4. generate webpack config and package.json
       const installCmd = options.pkg === 'npm' ? 'npm install' : 'yarn';
       try {
         // todo: https://github.com/angular/angular-cli/blob/master/packages/angular/cli/tasks/npm-install.ts
         execSync(installCmd, { stdio: [0, 1, 2] });
       } catch (e) {
-        // todo: add chalk
-        console.warn(`${installCmd} has failed, you can run it youself later.`);
+        consoleWarn(`${installCmd} has failed, you can run it youself later.`);
       }
 
       resolve();

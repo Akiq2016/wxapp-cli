@@ -7,7 +7,7 @@ try {
   yargs
     .usage('\n wxa <command> [args]')
     .command({
-      command: 'new',
+      command: 'new <projectname> [tplpath]',
       builder: newBuilder,
       handler: newHandler,
       desc: 'new a wxapp project',

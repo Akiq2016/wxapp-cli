@@ -7,17 +7,8 @@ import {
   ensureDirSync,
 } from 'fs-extra';
 import { join, resolve } from 'path';
-import { newProject } from '../src/commands/new';
-
-function newHandler(pkg, scripts, style) {
-  return {
-    _: ['new', 'newproject'],
-    $0: 'bin/wxa',
-    pkg: `${pkg}`,
-    scripts: `${scripts}`,
-    style: `${style}`,
-  };
-}
+import inquirer from 'inquirer';
+import { newHandler } from '../src/commands/new';
 
 function getPageValInAppJson(appJsonPages, pagePath) {
   if (pagePath.indexOf('\\') >= 0) {
@@ -105,8 +96,21 @@ describe('new a project named newproject', () => {
   });
 
   test('using npm js wxss', async () => {
-    const options = newHandler('npm', 'js', 'wxss');
-    await newProject(options);
+    await inquirer.prompt.mockImplementationOnce(_ =>
+      Promise.resolve({
+        pkg: 'npm',
+        scripts: 'js',
+        style: 'wxss',
+      })
+    );
+
+    newHandler({
+      _: ['new'],
+      $0: 'bin/wxa',
+      projectname: 'newproject',
+      projectDir: join(__dirname, '..', 'newproject'),
+    });
+
     expect(existsSync(join(root, 'newproject', 'node_modules'))).toBe(true);
   });
 });
