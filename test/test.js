@@ -104,7 +104,7 @@ describe('new a project named newproject', () => {
       })
     );
 
-    newHandler({
+    await newHandler({
       _: ['new'],
       $0: 'bin/wxa',
       projectname: 'newproject',
