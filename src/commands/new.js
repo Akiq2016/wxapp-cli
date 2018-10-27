@@ -85,7 +85,7 @@ export const newHandler = async argv => {
     await newProject(options);
   } catch (error) {
     consoleErr(error);
-    process.exit(0);
+    process.exit(1);
   }
 };
 
