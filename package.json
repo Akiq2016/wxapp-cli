@@ -58,6 +58,7 @@
     "lint-staged": "^7.3.0",
     "prettier": "^1.14.3",
     "rimraf": "^2.6.2",
+    "sao": "^0.22.17",
     "standard-version": "^4.4.0"
   },
   "dependencies": {
