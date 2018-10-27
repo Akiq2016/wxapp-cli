@@ -1,12 +1,17 @@
 #tests
-test
+test/
+
+#sources
+src/
 
 #build tools
 .travis.yml
 
 #linters
+.babelrc
 .huskyrc
 .prettierrc
+commitlint.config.js
 
 #editor settings
 .idea
