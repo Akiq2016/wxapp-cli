@@ -1,0 +1,13 @@
+#tests
+test
+
+#build tools
+.travis.yml
+
+#linters
+.huskyrc
+.prettierrc
+
+#editor settings
+.idea
+.editorconfig
