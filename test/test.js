@@ -40,20 +40,6 @@ beforeAll(() => {
   global.root = resolve(__dirname, '..');
   global.wxa = `node ${root}/bin/wxa`;
 
-  if (existsSync(join(root, 'newproject'))) {
-    removeSync(join(root, 'newproject/src', 'pages'));
-    removeSync(join(root, 'newproject/src', 'product2'));
-    removeSync(join(root, 'newproject/src', 'sub1'));
-    ensureDirSync(join(root, 'newproject/src', 'pages'));
-
-    const appJsonPath = join(root, 'newproject/src/app.json');
-    const appJson = JSON.parse(readFileSync(appJsonPath, 'utf8'));
-    appJson.pages = [];
-    delete appJson.subPackages;
-
-    writeFileSync(appJsonPath, JSON.stringify(appJson, null, 2));
-  }
-
   global.page1path = join(root, 'newproject/src', 'pages', 'detail1.wxml');
   global.page2path = join(
     root,
@@ -264,4 +250,8 @@ describe('test in newproject', () => {
       ).toBe('detail5');
     });
   });
+});
+
+afterAll(() => {
+  removeSync(join(root, 'newproject'));
 });
