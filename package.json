@@ -1,6 +1,6 @@
 {
-  "name": "@wxapp/cli",
-  "version": "0.0.2",
+  "name": "@hzfe/wxapp-cli",
+  "version": "0.1.0",
   "description": "自用小程序脚手架",
   "main": "lib/index.js",
   "scripts": {
@@ -74,5 +74,9 @@
       "prettier --trailing-comma es5 --single-quote --write",
       "git add"
     ]
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "test"
   }
 }
