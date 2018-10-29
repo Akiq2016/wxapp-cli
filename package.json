@@ -9,7 +9,7 @@
     "dev": "cross-env ENV=development ./bin/wxa",
     "prebuild": "rimraf lib",
     "build": "babel src -d lib && cpy '**/template.*' '../lib/' --cwd=src --parents",
-    "postbuild": "cross-env jest",
+    "postbuild": "",
     "release": "standard-version"
   },
   "bin": {
@@ -51,7 +51,6 @@
     "@commitlint/config-conventional": "^7.1.2",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^23.6.0",
-    "babel-loader": "^8.0.4",
     "cpy-cli": "^2.0.0",
     "cross-env": "^5.2.0",
     "husky": "^1.1.2",

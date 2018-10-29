@@ -99,7 +99,15 @@ export function newProject(options) {
       // todo: warning Config file was not found
       // todo: if using default project template
       // some dirs' files need to be selected by user, the others can be output directly
-      execSync(`sao ${projectTplPath} --clone`, { stdio: [0, 1, 2] });
+      execSync(
+        `${join(
+          __dirname,
+          '..',
+          '..',
+          'node_modules/.bin/sao'
+        )} ${projectTplPath} --clone`,
+        { stdio: [0, 1, 2] }
+      );
 
       // 2. initial page/spage/cpn's templates: using custom tpl > using default tpl
       // todo: template files ext should use user config
