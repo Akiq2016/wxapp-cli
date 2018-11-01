@@ -5,6 +5,8 @@ import {
   readFileSync,
   writeFileSync,
 } from 'fs-extra';
+import inquirer from 'inquirer';
+import { consoleErr, consoleCreate } from '../utils';
 
 /**
  * give params to generate a files relative path (path.*)
@@ -25,7 +27,7 @@ function getFilePathTpl(type, name) {
  * write files
  *
  * @param {string[]} fileTypes default value: ['json', 'js', 'wxml', 'wxss']
- * @param {string} filePathTpl default value: index.*
+ * @param {string} filePathTpl e.g. value: index.*
  * @param {string} cwd current exec root
  * @param {string} tplDirname get template from ./.template/${tplDirname}/
  */
@@ -40,10 +42,10 @@ function writeFiles({ fileTypes, filePathTpl, cwd, tplDirname }) {
       );
       const destPath = filePathTpl.replace('*', ext);
       outputFileSync(destPath, fileTplt);
-      console.log(`[ok] generate ${destPath}`);
+      consoleCreate(`${destPath}`);
     });
   } else {
-    console.error(`[error] ${filePathTpl} already existed`);
+    consoleErr(`${filePathTpl} already existed`);
   }
 }
 
@@ -58,16 +60,19 @@ function writeAppJson({ type, cwd, filePathTpl, argv }) {
     }
 
     if (appJson.pages.indexOf(value) >= 0) {
-      console.log(`${value} already in app.json pages property`);
+      consoleErr(`${value} already in app.json pages property`);
       return;
     }
 
     appJson.pages.push(value);
     writeFileSync(appJsonPath, JSON.stringify(appJson, null, 2));
   } else if (type === 'subpage') {
-    const root = argv.root.startsWith('/')
-      ? argv.root.slice(1)
-      : `pages/${argv.root}`;
+    const root =
+      argv.root.startsWith('/') || argv.name.startsWith('/')
+        ? argv.root.startsWith('/')
+          ? argv.root.slice(1)
+          : argv.root
+        : `pages/${argv.root}`;
     value = value.split(`${root}/`)[1];
 
     if (!Array.isArray(appJson.subPackages)) {
@@ -80,7 +85,7 @@ function writeAppJson({ type, cwd, filePathTpl, argv }) {
       // check if is already in app.json
       if (Array.isArray(subPackage.pages)) {
         if (subPackage.pages.indexOf(value) !== -1) {
-          console.log(`${value} already in app.json pages property`);
+          consoleErr(`${value} already in app.json pages property`);
           return;
         }
       } else {
@@ -114,7 +119,7 @@ function createPage({ cwd, argv, fileTypes }) {
 function createSubPage({ cwd, argv, fileTypes }) {
   // get new subpage path
   let tplDirname = 'subpage';
-  const filePathTpl = getFilePathTpl('pages', `${argv.root}/${argv.name}`);
+  const filePathTpl = getFilePathTpl('pages', `${argv.name}`);
 
   if (!existsSync(`${cwd}/.templates/${tplDirname}`)) {
     tplDirname = 'page';
@@ -136,36 +141,100 @@ function createComponent({ cwd, argv, fileTypes }) {
   writeFiles({ fileTypes, filePathTpl, cwd, tplDirname });
 }
 
+const completeOptionalPositional = async argv => {
+  const res = {};
+
+  // get type
+  if (!argv.type) {
+    const { type } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'type',
+        message: 'What type would you like to generate?',
+        choices: ['page', 'subpackage', 'component'],
+        filter: value => {
+          return value === 'page'
+            ? 'page'
+            : value === 'subpackage'
+              ? 'spage'
+              : 'cpn';
+        },
+      },
+    ]);
+
+    res.type = type;
+  }
+
+  // get filename
+  if (!argv.name) {
+    const { name } = await inquirer.prompt([
+      {
+        name: 'name',
+        message: 'What name would you like to use for the files?',
+        validate: val => {
+          if (!val || /[^\w/]/.test(val)) {
+            return 'file name available input: [A-Za-z0-9_] or slash(/).';
+          }
+
+          return true;
+        },
+      },
+    ]);
+
+    res.name = name;
+  }
+
+  // get root if type is spage
+  if ((argv.type === 'spage' || res.type === 'spage') && !argv.root) {
+    const { root } = await inquirer.prompt([
+      {
+        name: 'root',
+        message: 'What root would you like to use for the subpackage?',
+        validate: val => {
+          if (val.endsWith('/')) {
+            return 'root should not end with slash(/)';
+          }
+
+          if (!val || /[^\w/]/.test(val)) {
+            return 'root available input: [A-Za-z0-9_] or slash(/).';
+          }
+
+          return true;
+        },
+      },
+    ]);
+
+    res.root = root;
+  }
+
+  return res;
+};
+
 export const generateBuilder = yargs => {
   yargs
-    .default({
-      type: 'page',
-      name: 'index',
-    })
+    .usage('\n wxa gen [type] [name] [root]')
     .positional('type', {
-      describe: 'define the files type: page/subpage/component',
-      choices: ['page', 'spage', 'cpn'],
+      describe: '📓 Type to generate. (Available choices: [page, spage, cpn])',
+    })
+    .positional('name', {
+      describe: '📒 Name used for files. (Path can be included in the name)',
+    })
+    .positional('root', {
+      describe:
+        '📖 Root used for subpackage files. (Only available for [spage] type)',
     })
     .help().argv;
-
-  if (yargs.argv._[1] === 'spage') {
-    yargs.options({
-      root: {
-        describe: 'root of sub packages',
-        type: 'string',
-        demandOption: true,
-      },
-    });
-  }
 };
 
 export const generateHandler = async argv => {
   const cwd = process.cwd();
 
   if (!existsSync(join(cwd, 'wxa.config.js'))) {
-    console.error('[error] please run command at project root dir');
+    consoleErr('Please run command at project root dir');
     return;
   }
+
+  Object.assign(argv, await completeOptionalPositional(argv));
 
   // get user setting
   const config = require(`${cwd}/wxa.config.js`);

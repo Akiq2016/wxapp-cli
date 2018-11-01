@@ -36,15 +36,45 @@ const getNewPromptItems = _ => [
   },
 ];
 
+const completeOptionalPositional = async argv => {
+  const res = {};
+
+  // get project name
+  if (!argv.projectname) {
+    const { projectname } = await inquirer.prompt([
+      {
+        name: 'projectname',
+        message: 'What name would you like to use for the project?',
+        validate: val => {
+          if (!val || /[^\w]/.test(val)) {
+            return 'project name available input: [A-Za-z0-9_]';
+          }
+
+          return true;
+        },
+      },
+    ]);
+
+    res.projectname = projectname;
+  }
+
+  return res;
+};
 // This function is executed with a yargs instance,
 // and can be used to provide advanced command specific help:
 export const newBuilder = yargs => {
   yargs
-    .usage('\n wxa new [args]')
+    .usage('\n wxa new [projectname] [templaterepo]')
+    .positional('projectname', {
+      describe: '📓 Your project name',
+    })
+    .positional('templaterepo', {
+      describe: '📒 Git repository or local directory',
+    })
     .options({
       y: {
         alias: 'yes',
-        desc: 'use default setting',
+        desc: 'Use default setting',
         type: 'boolean',
       },
     })
@@ -53,19 +83,18 @@ export const newBuilder = yargs => {
 
 // handler function, which will be executed with the parsed argv object:
 export const newHandler = async argv => {
+  Object.assign(argv, await completeOptionalPositional(argv));
+
   let options;
 
   // initial project dir
-  if (argv.projectname) {
-    argv.projectDir = getProjectDir(argv.projectname);
-
-    if (!existsSync(argv.projectDir)) {
-      mkdirp.sync(argv.projectDir);
-    } else {
-      consoleErr(`${argv.projectDir} already existed`);
-      delete argv.projectDir;
-      return;
-    }
+  argv.projectDir = getProjectDir(argv.projectname);
+  if (!existsSync(argv.projectDir)) {
+    mkdirp.sync(argv.projectDir);
+  } else {
+    consoleErr(`${argv.projectDir} already existed`);
+    delete argv.projectDir;
+    return;
   }
 
   // get options
