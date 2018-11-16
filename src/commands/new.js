@@ -134,7 +134,7 @@ export function newProject(options) {
           '..',
           '..',
           'node_modules/.bin/sao'
-        )} ${projectTplPath} --clone`,
+        )} ${projectTplPath} --clone=false`,
         { stdio: [0, 1, 2] }
       );
 
