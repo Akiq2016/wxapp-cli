@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.1.9"></a>
+## [0.1.9](https://github.com/feiwuteam/wxapp-cli/compare/v0.1.8...v0.1.9) (2018-11-16)
+
+
+### Bug Fixes
+
+* [#1](https://github.com/feiwuteam/wxapp-cli/issues/1) clone option ([c0925bc](https://github.com/feiwuteam/wxapp-cli/commit/c0925bc))
+
+
+
 <a name="0.1.8"></a>
 ## [0.1.8](https://github.com/feiwuteam/wxapp-cli/compare/v0.1.7...v0.1.8) (2018-11-01)
 
