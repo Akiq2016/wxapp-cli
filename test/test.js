@@ -156,30 +156,32 @@ describe('test in newproject', () => {
   });
 
   describe('generate sub pages', () => {
-    test('generate spage --root product1/sub1 detail2', () => {
+    test('generate spage product1/sub1/detail2 product1/sub1', () => {
       try {
-        execSync(`${wxa} generate spage --root product1/sub1 detail2`);
+        execSync(`${wxa} generate spage product1/sub1/detail2 product1/sub1`);
       } catch (error) {}
       expect(existsSync(page1path_sub)).toBe(true);
     });
 
-    test('generate spage --root product1/sub2 path1/detail3', () => {
+    test('generate spage product1/sub2/path1/detail3 product1/sub2', () => {
       try {
-        execSync(`${wxa} generate spage --root product1/sub2 path1/detail3`);
+        execSync(
+          `${wxa} generate spage product1/sub2/path1/detail3 product1/sub2`
+        );
       } catch (error) {}
       expect(existsSync(page2path_sub)).toBe(true);
     });
 
-    test('generate spage --root /sub1 detail4', () => {
+    test('generate spage /sub1/detail4 /sub1', () => {
       try {
-        execSync(`${wxa} generate spage --root /sub1 detail4`);
+        execSync(`${wxa} generate spage /sub1/detail4 /sub1`);
       } catch (error) {}
       expect(existsSync(page3path_sub)).toBe(true);
     });
 
-    test('generate spage --root /product2/sub2 detail5', () => {
+    test('generate spage /product2/sub2/detail5 /product2/sub2', () => {
       try {
-        execSync(`${wxa} generate spage --root /product2/sub2 detail5`);
+        execSync(`${wxa} generate spage /product2/sub2/detail5 /product2/sub2`);
       } catch (error) {}
       expect(existsSync(page4path_sub)).toBe(true);
     });

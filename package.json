@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "format": "prettier --trailing-comma es5 --single-quote --write 'src/*/*.js'",
-    "test": "echo test",
+    "test": "npm run build && jest",
     "dev": "cross-env ENV=development babel-node ./bin/wxa",
     "prebuild": "rimraf lib",
     "build": "babel src -d lib && cpy '**/template.*' '../lib/' --cwd=src --parents",
@@ -50,9 +50,11 @@
     "@commitlint/cli": "^7.2.0",
     "@commitlint/config-conventional": "^7.1.2",
     "babel-core": "^7.0.0-bridge.0",
+    "babel-jest": "^23.6.0",
     "cpy-cli": "^2.0.0",
     "cross-env": "^5.2.0",
     "husky": "^1.1.2",
+    "jest": "^23.6.0",
     "lint-staged": "^7.3.0",
     "prettier": "^1.14.3",
     "standard-version": "^4.4.0"
