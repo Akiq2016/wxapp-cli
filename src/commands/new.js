@@ -1,9 +1,16 @@
 import { resolve, join } from 'path';
 import mkdirp from 'mkdirp';
 import inquirer from 'inquirer';
-import { copySync, existsSync, writeFileSync } from 'fs-extra';
+import {
+  copySync,
+  existsSync,
+  writeFileSync,
+  closeSync,
+  openSync,
+  ensureFileSync,
+} from 'fs-extra';
 import { execSync } from 'child_process';
-import config from '../config';
+import config, { TPLS } from '../config';
 import { consoleErr, consoleWarn } from '../utils';
 
 const cwd = process.cwd();
@@ -107,8 +114,9 @@ export const newHandler = async argv => {
     );
   }
 
-  // todo: [debug mode] start generate project by options
-  console.log(options);
+  if (process.env.ENV === 'development') {
+    console.log(options);
+  }
 
   try {
     await newProject(options);
@@ -139,30 +147,12 @@ export function newProject(options) {
       );
 
       // 2. initial page/spage/cpn's templates: using custom tpl > using default tpl
-      // todo: template files ext should use user config
+      // todo: custom template
       try {
-        const defaultTplDir = join(__dirname, '..', 'templates');
         const tplDir = existsSync(config.customConfigDir)
           ? config.customConfigDir
-          : defaultTplDir;
-
-        copySync(tplDir, join(options.projectDir, '.templates'));
-
-        // check page template
-        if (!existsSync(join(tplDir, 'page'))) {
-          copySync(
-            join(defaultTplDir, 'page'),
-            join(options.projectDir, '.templates/page')
-          );
-        }
-
-        // check component template
-        if (!existsSync(join(tplDir, 'component'))) {
-          copySync(
-            join(defaultTplDir, 'component'),
-            join(options.projectDir, '.templates/component')
-          );
-        }
+          : null;
+        generateTpls(options, tplDir);
       } catch (error) {
         consoleErr(error);
         return;
@@ -187,5 +177,53 @@ export function newProject(options) {
     } catch (error) {
       reject(error);
     }
+  });
+}
+
+function generateTpls(options, tplDir) {
+  const dirPathDict = ['component', 'page'].reduce(
+    (acc, key) => ({
+      ...acc,
+      [key]: [options.scripts, options.style, 'json', 'wxml'].map(
+        (ext, index) => {
+          const path = tplDir ? join(tplDir, key, `template.${ext}`) : null;
+
+          return {
+            path: path && existsSync(path) ? path : null,
+            folder: key,
+            ext,
+            type: index === 0 ? 'scripts' : index === 1 ? 'style' : null,
+          };
+        }
+      ),
+    }),
+    {}
+  );
+
+  Object.keys(dirPathDict).forEach(key => {
+    const items = dirPathDict[key];
+
+    items.forEach(item => {
+      if (item.path) {
+        copySync(item.path, join(options.projectDir, '.templates', folder));
+      } else {
+        const dirPath = join(
+          options.projectDir,
+          '.templates',
+          item.folder,
+          `template.${item.ext}`
+        );
+
+        if (item.ext === 'json' || item.type === 'scripts') {
+          ensureFileSync(dirPath);
+          writeFileSync(
+            dirPath,
+            TPLS[`${item.folder}${item.ext === 'json' ? 'json' : 'scripts'}`]
+          );
+        } else if (item.ext === 'wxml' || item.type === 'style') {
+          closeSync(openSync(dirPath, 'w'));
+        }
+      }
+    });
   });
 }

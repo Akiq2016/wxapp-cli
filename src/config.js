@@ -16,8 +16,6 @@ const createdChoicesFilterDict = {
   },
 };
 
-// const customConfigDir = xdgBasedir.config; //
-
 const config = {
   // for commands/new prompt items
   createdChoicesDict,
@@ -37,3 +35,38 @@ const config = {
 };
 
 export default config;
+
+const componentscripts = `// https://developers.weixin.qq.com/miniprogram/dev/framework/custom-component/
+Component({
+  properties: {},
+  data: {},
+  created() {},
+  attached() {},
+  ready() {},
+  moved() {},
+  methods: {},
+});
+`;
+
+const pagescripts = `// https://developers.weixin.qq.com/miniprogram/dev/framework/app-service/page.html
+Page({
+  data: {},
+  onLoad() {},
+  onReady() {},
+  onShow() {},
+  onHide() {},
+  onUnload() {},
+  onPullDownRefresh() {},
+  onReachBottom() {},
+  onShareAppMessage() {},
+  onPageScroll() {},
+});
+`;
+
+const componentjson = `{
+  "component": true
+}`;
+
+const pagejson = `{}`;
+
+export const TPLS = { componentscripts, componentjson, pagescripts, pagejson };

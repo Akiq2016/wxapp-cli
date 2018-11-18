@@ -8,7 +8,7 @@
     "test": "npm run build && jest",
     "dev": "cross-env ENV=development babel-node ./bin/wxa",
     "prebuild": "rimraf lib",
-    "build": "babel src -d lib && cpy '**/template.*' '../lib/' --cwd=src --parents",
+    "build": "babel src -d lib",
     "release": "standard-version"
   },
   "bin": {

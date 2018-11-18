@@ -85,8 +85,8 @@ describe('new a project named newproject', () => {
     await inquirer.prompt.mockImplementationOnce(_ =>
       Promise.resolve({
         pkg: 'npm',
-        scripts: 'js',
-        style: 'wxss',
+        scripts: 'ts',
+        style: 'scss',
       })
     );
 
