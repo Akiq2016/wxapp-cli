@@ -132,7 +132,7 @@ export function newProject(options) {
       process.chdir(options.projectDir);
 
       // 1. generate project using projectTplPath
-      const projectTplPath = options.tplpath || config.projectTplPath;
+      const projectTplPath = options.templaterepo || config.projectTplPath;
       // todo: warning Config file was not found
       // todo: if using default project template
       // some dirs' files need to be selected by user, the others can be output directly
