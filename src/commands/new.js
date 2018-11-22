@@ -114,10 +114,6 @@ export const newHandler = async argv => {
     );
   }
 
-  if (process.env.ENV === 'development') {
-    console.log(options);
-  }
-
   try {
     await newProject(options);
   } catch (error) {
@@ -159,10 +155,7 @@ export function newProject(options) {
       }
 
       // 3. save user project setting to wxa.config.js
-      writeFileSync(
-        join(options.projectDir, 'wxa.config.js'),
-        `module.exports = ${JSON.stringify(options, null, 2)};\n`
-      );
+      generateWxaConfig(options);
 
       // todo 4. generate webpack config and package.json
       const installCmd = options.pkg === 'npm' ? 'npm install' : 'yarn';
@@ -226,4 +219,26 @@ function generateTpls(options, tplDir) {
       }
     });
   });
+}
+
+function generateWxaConfig(options) {
+  const requiredFields = [
+    'projectname',
+    'projectDir',
+    'pkg',
+    'scripts',
+    'style',
+  ];
+  const res = requiredFields.reduce(
+    (acc, v) => ({
+      ...acc,
+      [v]: options[v],
+    }),
+    {}
+  );
+
+  writeFileSync(
+    join(options.projectDir, 'wxa.config.js'),
+    `module.exports = ${JSON.stringify(res, null, 2)};\n`
+  );
 }
