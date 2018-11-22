@@ -1,6 +1,6 @@
 {
   "name": "@hzfe/wxapp-cli",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "自用小程序脚手架",
   "main": "lib/index.js",
   "scripts": {
