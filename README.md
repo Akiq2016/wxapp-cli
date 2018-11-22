@@ -2,6 +2,8 @@
 
 A command line interface for Mini Program.
 
+![wxa gen](./README.svg)
+
 ## Install
 ```bash
 npm install -g @hzfe/wxapp-cli
