@@ -32,20 +32,20 @@ function getFilePathTpl(type, name) {
  * @param {string} tplDirname get template from ./.template/${tplDirname}/
  */
 function writeFiles({ fileTypes, filePathTpl, cwd, tplDirname }) {
-  filePathTpl = join(cwd, 'src', filePathTpl);
+  const path = join(cwd, 'src', filePathTpl);
 
-  if (fileTypes.every(v => !existsSync(filePathTpl.replace('*', v)))) {
+  if (fileTypes.every(v => !existsSync(path.replace('*', v)))) {
     fileTypes.forEach(ext => {
       const fileTplt = readFileSync(
         `${cwd}/.templates/${tplDirname}/template.${ext}`,
         'utf8'
       );
-      const destPath = filePathTpl.replace('*', ext);
+      const destPath = path.replace('*', ext);
       outputFileSync(destPath, fileTplt);
-      consoleCreate(`${destPath}`);
+      consoleCreate(`${join('src', filePathTpl).replace('*', ext)}`);
     });
   } else {
-    consoleErr(`${filePathTpl} already existed`);
+    consoleErr(`${path} already existed`);
   }
 }
 
